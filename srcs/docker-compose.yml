@@ -1,0 +1,73 @@
+# ************************************** #
+#           DOCKER-COMPOSE               #
+# ************************************** #
+
+# Compose version syntax #
+version: "3.7"
+
+# 1. VOLUMES #
+# External volumes to configure for the 
+# use of the containers & persists data #
+volumes:
+   mariadb-volume:
+     driver: local # Default
+     driver_opts:
+       device: /home/acaillea/data/database # Path to store
+       type: volume
+       o: bind # Bind conaintner with volume
+   
+   wordpress-volume:
+     driver: local
+     driver_opts:
+       device: /home/acaillea/data/wordpress
+       type: volume
+       o: bind
+
+# 2. NETWORK #
+# Name of the network used by the containers 
+# to communicate #
+networks:
+  inception:
+
+# 3. SERVICES #
+# Services that will be built and ran #
+services:
+  mariadb:
+    container_name: mariadb
+    build: ./requirements/mariadb
+    env_file: 
+      - .env
+    image: mariadb
+    restart: unless-stopped
+    networks:
+      - inception # Container network
+    volumes:
+      - mariadb-volume:/var/lib/mysql # Data
+
+  nginx:
+    container_name: nginx
+    build: ./requirements/nginx
+    image: nginx
+    depends_on:
+      - wordpress
+    restart: unless-stopped
+    networks:
+      - inception
+    ports:
+      - "443:443" # Host:container
+    volumes:
+      - wordpress-volume:/var/www/wordpress
+
+  wordpress:
+    container_name: wordpress
+    build: ./requirements/wordpress
+    env_file:
+      - .env
+    image: wordpress
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+    networks:
+      - inception
+    volumes:
+      - wordpress-volume:/var/www/wordpress

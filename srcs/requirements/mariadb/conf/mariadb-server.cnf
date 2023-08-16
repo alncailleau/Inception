@@ -1,0 +1,10 @@
+# Precise technology for MySQL
+## Needed to set adress & port
+[galera]
+
+# MariaDB listening adresse
+## 0.0.0.0 means MariaDB may bind to any network interface
+bind-address=0.0.0.0
+
+# Default & required MariaDB listening port
+port=3306 
